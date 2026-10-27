@@ -1,9 +1,10 @@
 // Regelbasierte Empfehlung, keine KI. Die Empfehlung ist ein Vorschlag; auf dem Ergebnis-Screen
 // bleibt jedes Programm wählbar.
-// Accelerator: Schwellen wie in der Schnellbewerbung (lib/routing), alle drei Kriterien nötig.
-// Goods: vorläufige Regel bis zur Abstimmung mit dem Goods-Team, Produkt plus erste Umsätze.
+// Accelerator: Schwellen wie in der Schnellbewerbung (lib/routing), alle Kriterien nötig.
+// Goods: vorläufige Regel bis zur Abstimmung mit dem Goods-Team.
+// Gegründet ist Voraussetzung für beide Accelerator-Programme (Annahme, noch zu bestätigen).
 
-import { FRAGEN, type FrageId } from './fragen';
+import { FRAGEN, merkmalFuer, type FrageId } from './fragen';
 import type { ProgrammId } from './programme';
 
 export type Antworten = Partial<Record<FrageId, string>>;
@@ -14,63 +15,59 @@ interface Kriterium {
   readonly text: string;
 }
 
+const GEGRUENDET: Kriterium = { frage: 'gegruendet', erfuelltBei: ['a1'], text: 'Bereits gegründet' };
+
 export const GOODS_KRITERIEN: readonly Kriterium[] = [
-  { frage: 'angebot', erfuelltBei: ['d1'], text: 'Physisches Produkt für Endkund:innen' },
-  { frage: 'umsatz', erfuelltBei: ['a2', 'a3', 'a4', 'a5'], text: 'Erste Umsätze' },
+  GEGRUENDET,
+  { frage: 'angebot', erfuelltBei: ['e1'], text: 'Physisches Produkt für Endkund:innen' },
+  { frage: 'umsatz', erfuelltBei: ['b2', 'b3', 'b4', 'b5'], text: 'Erste Umsätze' },
 ];
 
 export const ACCELERATOR_KRITERIEN: readonly Kriterium[] = [
-  { frage: 'umsatz', erfuelltBei: ['a3', 'a4', 'a5'], text: 'Umsatz ab 10.000 € im Jahr' },
-  { frage: 'team', erfuelltBei: ['b3', 'b4'], text: 'Team ab 3 Personen' },
-  { frage: 'runway', erfuelltBei: ['c2', 'c3'], text: 'Runway von mindestens 6 Monaten' },
+  GEGRUENDET,
+  { frage: 'umsatz', erfuelltBei: ['b3', 'b4', 'b5'], text: 'Umsatz ab 10.000 € im Jahr' },
+  { frage: 'team', erfuelltBei: ['c3', 'c4'], text: 'Team ab 3 Personen' },
+  { frage: 'runway', erfuelltBei: ['d2', 'd3'], text: 'Runway von mindestens 6 Monaten' },
 ];
-
-export interface KriteriumErgebnis {
-  readonly text: string;
-  readonly erfuellt: boolean;
-}
 
 export interface Empfehlung {
   readonly programm: ProgrammId;
-  readonly begruendung: string;
-  readonly kriterien: readonly KriteriumErgebnis[];
+  readonly intro: string;
+  readonly gruende: readonly string[];
 }
 
-function pruefe(kriterien: readonly Kriterium[], antworten: Antworten): KriteriumErgebnis[] {
-  return kriterien.map((k) => ({
-    text: k.text,
-    erfuellt: k.erfuelltBei.includes(antworten[k.frage] ?? ''),
-  }));
+function erfuellt(kriterium: Kriterium, antworten: Antworten): boolean {
+  return kriterium.erfuelltBei.includes(antworten[kriterium.frage] ?? '');
 }
 
-const alleErfuellt = (ergebnisse: readonly KriteriumErgebnis[]): boolean => ergebnisse.every((k) => k.erfuellt);
+const alleErfuellt = (kriterien: readonly Kriterium[], antworten: Antworten): boolean =>
+  kriterien.every((k) => erfuellt(k, antworten));
 
 export function empfehle(antworten: Antworten): Empfehlung {
-  const goods = pruefe(GOODS_KRITERIEN, antworten);
-  if (alleErfuellt(goods)) {
+  if (alleErfuellt(GOODS_KRITERIEN, antworten)) {
     return {
       programm: 'goods',
-      begruendung: 'Ihr verkauft schon ein physisches Produkt. Genau dafür ist Goods gedacht.',
-      kriterien: goods,
+      intro: 'Ihr verkauft bereits ein eigenes Produkt an Endkund:innen. Goods ist unser Accelerator für genau solche Teams.',
+      gruende: GOODS_KRITERIEN.map((k) => k.text),
     };
   }
 
-  const accelerator = pruefe(ACCELERATOR_KRITERIEN, antworten);
-  if (alleErfuellt(accelerator)) {
+  if (alleErfuellt(ACCELERATOR_KRITERIEN, antworten)) {
     return {
       programm: 'ifa',
-      begruendung: 'Ihr erfüllt alle drei Kriterien, mit denen Startups in den Accelerator starten.',
-      kriterien: accelerator,
+      intro:
+        'Ihr seid bereits am Markt und möchtet nun skalieren. Nach euren Angaben erfüllt ihr die Kernkriterien des Accelerators.',
+      gruende: ACCELERATOR_KRITERIEN.map((k) => k.text),
     };
   }
 
-  const produktOhneUmsatz = goods[0]!.erfuellt;
   return {
     programm: 'ifi',
-    begruendung: produktOhneUmsatz
-      ? 'Für den Accelerator sollten alle drei Kriterien erfüllt sein. Goods kommt infrage, sobald euer Produkt erste Umsätze macht. Bis dahin ist der Inkubator euer Weg.'
-      : 'Für den Accelerator sollten alle drei Kriterien erfüllt sein. Der Inkubator bringt euch genau dorthin.',
-    kriterien: accelerator,
+    intro:
+      'Laut euren Angaben steht ihr noch am Anfang eurer Reise. Wir unterstützen euch von der ersten Idee bis hin zum Markteintritt.',
+    gruende: ACCELERATOR_KRITERIEN.filter((k) => !erfuellt(k, antworten))
+      .map((k) => merkmalFuer(k.frage, antworten[k.frage]))
+      .filter((merkmal): merkmal is string => merkmal !== undefined),
   };
 }
 

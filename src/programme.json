@@ -4,8 +4,11 @@
       "id": "ifi",
       "name": "Inkubator",
       "nameAkkusativ": "den Inkubator",
+      "beschreibung": "Wir unterstützen euch von der ersten Idee bis hin zum Markteintritt.",
+      "batch": "Batch 16",
       "status": "offen",
       "frist": "2026-12-14",
+      "start": null,
       "bewerbenUrl": "https://bewerbung-ifi.impact-factory.de/",
       "vormerkenUrl": "https://impact-factory.de/programm-inkubator"
     },
@@ -13,8 +16,11 @@
       "id": "ifa",
       "name": "Accelerator",
       "nameAkkusativ": "den Accelerator",
+      "beschreibung": "Für Teams, die bereits am Markt sind und nun skalieren möchten.",
+      "batch": "Batch 3",
       "status": "vormerken",
       "frist": null,
+      "start": "im Dezember oder Januar",
       "bewerbenUrl": "https://bewerbung-ifa.impact-factory.de/",
       "vormerkenUrl": "https://impact-factory.de/programm-ifanrw"
     },
@@ -22,8 +28,11 @@
       "id": "goods",
       "name": "Goods",
       "nameAkkusativ": "Goods",
+      "beschreibung": "Unser Accelerator für Teams, die ein eigenes Produkt an Endkund:innen verkaufen.",
+      "batch": "Batch 1",
       "status": "demnaechst",
       "frist": null,
+      "start": "im ersten Halbjahr 2027",
       "bewerbenUrl": null,
       "vormerkenUrl": "https://impact-factory.de/programm-ubersicht"
     }
