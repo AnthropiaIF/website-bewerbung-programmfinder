@@ -1,0 +1,7 @@
+node_modules/
+coverage/
+.env
+.env.*
+
+# Interne Übergabe mit Infrastruktur-Details, gehört nicht ins öffentliche Repo
+UEBERGABE_*.md
