@@ -5,7 +5,7 @@ import {
   buttonText,
   istProgrammId,
   programm,
-  statusText,
+  zeitraumText,
   zielUrlFuer,
   type Programm,
   type ProgrammId,
@@ -23,6 +23,8 @@ interface Zustand {
 
 type Kind = Node | string | null;
 
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
 function el(tag: string, attribute: Record<string, string> = {}, ...kinder: Kind[]): HTMLElement {
   const element = document.createElement(tag);
   for (const [name, wert] of Object.entries(attribute)) {
@@ -38,6 +40,23 @@ function el(tag: string, attribute: Record<string, string> = {}, ...kinder: Kind
 
 function mitPfeil(text: string): HTMLElement[] {
   return [el('span', {}, text), el('span', { class: 'iff-pfeil', 'aria-hidden': 'true' }, '→')];
+}
+
+function kalenderSymbol(): SVGElement {
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.setAttribute('class', 'iff-symbol');
+  for (const d of ['M3 5h18v16H3z', 'M3 10h18', 'M8 2v5', 'M16 2v5']) {
+    const pfad = document.createElementNS(SVG_NS, 'path');
+    pfad.setAttribute('d', d);
+    svg.append(pfad);
+  }
+  return svg;
+}
+
+function zeitraum(p: Programm): HTMLElement {
+  return el('p', { class: 'iff-zeitraum' }, kalenderSymbol(), el('span', {}, zeitraumText(p)));
 }
 
 export function starteFinder(container: HTMLElement, seitenUrl: string): void {
@@ -134,19 +153,11 @@ export function starteFinder(container: HTMLElement, seitenUrl: string): void {
     return link;
   }
 
-  function kriterienListe(empfehlung: Empfehlung): HTMLElement {
+  function gruendeListe(gruende: readonly string[]): HTMLElement {
     return el(
       'ul',
-      { class: 'iff-kriterien', 'aria-label': 'Kriterien' },
-      ...empfehlung.kriterien.map((k) =>
-        el(
-          'li',
-          { class: k.erfuellt ? 'iff-erfuellt' : 'iff-nicht-erfuellt' },
-          el('span', { class: 'iff-zeichen', 'aria-hidden': 'true' }, k.erfuellt ? '✓' : '–'),
-          el('span', { class: 'iff-sr' }, k.erfuellt ? 'erfüllt: ' : 'nicht erfüllt: '),
-          k.text,
-        ),
-      ),
+      { class: 'iff-gruende', 'aria-label': 'Darum passt dieses Programm' },
+      ...gruende.map((grund) => el('li', {}, el('span', { class: 'iff-haken', 'aria-hidden': 'true' }, '✓'), grund)),
     );
   }
 
@@ -159,8 +170,9 @@ export function starteFinder(container: HTMLElement, seitenUrl: string): void {
           'li',
           { class: `iff-alternative iff-programm--${p.id}` },
           el('h3', { class: 'iff-alternative-name' }, p.name),
-          el('p', { class: 'iff-status' }, statusText(p)),
+          el('p', { class: 'iff-alternative-text' }, p.beschreibung),
           programmLink(p, empfohlen, 'iff-button-sekundaer'),
+          zeitraum(p),
         ),
       ),
     );
@@ -201,6 +213,7 @@ export function starteFinder(container: HTMLElement, seitenUrl: string): void {
   function zeigeErgebnis(empfohlen: ProgrammId, empfehlung: Empfehlung | null, fokussieren: boolean): void {
     const p = programm(empfohlen);
     const vorzeile = empfehlung ? 'Nach euren Angaben passt am besten:' : 'Euer gewähltes Programm:';
+    const intro = empfehlung ? empfehlung.intro : p.beschreibung;
 
     zeige(
       [
@@ -215,20 +228,16 @@ export function starteFinder(container: HTMLElement, seitenUrl: string): void {
             ' ',
             el('span', { class: 'iff-programmname' }, p.name),
           ),
-          empfehlung ? el('p', { class: 'iff-begruendung' }, empfehlung.begruendung) : null,
-          empfehlung ? kriterienListe(empfehlung) : null,
-          el(
-            'div',
-            { class: 'iff-cta' },
-            programmLink(p, empfohlen, 'iff-button'),
-            el('p', { class: 'iff-status' }, statusText(p)),
-          ),
+          el('p', { class: 'iff-intro' }, intro),
+          empfehlung && empfehlung.gruende.length > 0 ? gruendeListe(empfehlung.gruende) : null,
+          el('div', { class: 'iff-cta' }, programmLink(p, empfohlen, 'iff-button')),
+          zeitraum(p),
         ),
         el('div', { class: 'iff-weiteres' }, ...alternativen(empfohlen), folgeAktion()),
       ],
       fokussieren,
     );
-    ansage.textContent = empfehlung ? `${vorzeile} ${p.name}. ${empfehlung.begruendung}` : `${vorzeile} ${p.name}`;
+    ansage.textContent = `${vorzeile} ${p.name}. ${intro}`;
     sendeEreignis('finder_ergebnis', { empfehlung: empfohlen, quelle: zustand.quelle });
   }
 

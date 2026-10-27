@@ -81,15 +81,22 @@ const CSS = `
 .iff-ergebnis .iff-eyebrow { color: var(--_ink); }
 .iff-vorzeile { display: block; margin-bottom: 6px; font-size: clamp(18px, 2vw, 22px); letter-spacing: -.01em; }
 .iff-programmname { display: block; font-size: clamp(44px, 7vw, 80px); line-height: 1; letter-spacing: -.03em; }
-.iff-begruendung { margin: 20px 0 0; max-width: 36rem; }
-.iff-kriterien { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 0; padding: 0; list-style: none; }
-.iff-kriterien li {
+.iff-intro { margin: 20px 0 0; max-width: 36rem; }
+.iff-gruende { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 0; padding: 0; list-style: none; }
+.iff-gruende li {
   display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 6px 14px;
   font-size: 14px; font-weight: 500; line-height: 1.2; border: 2px solid var(--_ink);
 }
-.iff-kriterien li.iff-nicht-erfuellt { border-style: dashed; }
-.iff-zeichen { font-weight: 700; }
-.iff-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-top: 32px; }
+.iff-haken { font-weight: 700; }
+.iff-cta { margin-top: 32px; }
+.iff-zeitraum {
+  display: flex; align-items: flex-start; gap: 12px; margin: 28px 0 0; padding-top: 20px;
+  font-size: 15px; font-weight: 500; line-height: 1.4; border-top: 2px solid var(--_ink);
+}
+.iff-symbol {
+  width: 22px; height: 22px; flex: none; margin-top: -1px;
+  fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: square;
+}
 
 .iff-button, .iff-button-sekundaer {
   display: inline-flex; align-items: center; justify-content: center; gap: 12px; max-width: 100%;
@@ -103,7 +110,6 @@ const CSS = `
 .iff-button-sekundaer:hover { color: var(--_ink); background: rgba(0, 0, 0, .06); }
 .iff-pfeil { display: inline-block; font-size: 1.15em; line-height: 0; transition: transform 240ms var(--_ease); }
 .iff-button:hover .iff-pfeil, .iff-button-sekundaer:hover .iff-pfeil { transform: translateX(4px); }
-.iff-status { margin: 0; font-size: 14px; font-weight: 500; }
 
 .iff-weiteres { display: flex; flex-direction: column; align-items: flex-start; gap: 20px; margin-top: 28px; }
 .iff-alternativen {
@@ -117,8 +123,13 @@ const CSS = `
   font-family: var(--_titel-font); font-weight: 500; font-size: 24px; line-height: 1.2; letter-spacing: -.01em;
 }
 .iff-alternative-name::before { content: ""; width: 14px; height: 14px; background: var(--_programm); border: 2px solid var(--_ink); flex: none; }
-.iff-alternative .iff-status { color: var(--_gedaempft); font-weight: 400; }
+.iff-alternative-text { margin: 0; color: var(--_gedaempft); }
 .iff-alternative .iff-button-sekundaer { margin-top: 6px; }
+.iff-alternative .iff-zeitraum {
+  margin-top: 6px; padding-top: 14px; font-size: 14px; font-weight: 400; color: var(--_gedaempft);
+  border-top-width: 1px; border-top-color: #c9cccd;
+}
+.iff-alternative .iff-symbol { width: 18px; height: 18px; margin-top: 0; }
 
 .iff :focus-visible { outline: 3px solid var(--_teal-tief); outline-offset: 3px; }
 .iff-ergebnis :focus-visible { outline-color: var(--_ink); }
