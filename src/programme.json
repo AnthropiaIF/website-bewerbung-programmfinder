@@ -1,0 +1,31 @@
+{
+  "programme": [
+    {
+      "id": "ifi",
+      "name": "Inkubator",
+      "nameAkkusativ": "den Inkubator",
+      "status": "offen",
+      "frist": "2026-12-14",
+      "bewerbenUrl": "https://bewerbung-ifi.impact-factory.de/",
+      "vormerkenUrl": "https://impact-factory.de/programm-inkubator"
+    },
+    {
+      "id": "ifa",
+      "name": "Accelerator",
+      "nameAkkusativ": "den Accelerator",
+      "status": "vormerken",
+      "frist": null,
+      "bewerbenUrl": "https://bewerbung-ifa.impact-factory.de/",
+      "vormerkenUrl": "https://impact-factory.de/programm-ifanrw"
+    },
+    {
+      "id": "goods",
+      "name": "Goods",
+      "nameAkkusativ": "Goods",
+      "status": "demnaechst",
+      "frist": null,
+      "bewerbenUrl": null,
+      "vormerkenUrl": "https://impact-factory.de/programm-ubersicht"
+    }
+  ]
+}
