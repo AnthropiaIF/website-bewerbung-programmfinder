@@ -1,8 +1,9 @@
-// Regelbasierte Empfehlung, keine KI. Schwellen wie in der Schnellbewerbung (lib/routing):
-// Accelerator nur, wenn alle drei Reife-Kriterien erfüllt sind, sonst Inkubator.
-// Die Empfehlung ist ein Vorschlag; auf dem Ergebnis-Screen bleibt jedes Programm wählbar.
+// Regelbasierte Empfehlung, keine KI. Die Empfehlung ist ein Vorschlag; auf dem Ergebnis-Screen
+// bleibt jedes Programm wählbar.
+// Accelerator: Schwellen wie in der Schnellbewerbung (lib/routing), alle drei Kriterien nötig.
+// Goods: vorläufige Regel bis zur Abstimmung mit dem Goods-Team, Produkt plus erste Umsätze.
 
-import { FRAGEN, type Frage, type FrageId } from './fragen';
+import { FRAGEN, type FrageId } from './fragen';
 import type { ProgrammId } from './programme';
 
 export type Antworten = Partial<Record<FrageId, string>>;
@@ -13,12 +14,15 @@ interface Kriterium {
   readonly text: string;
 }
 
-export const GOODS_ANTWORT = { frage: 'angebot', code: 'a1' } as const;
+export const GOODS_KRITERIEN: readonly Kriterium[] = [
+  { frage: 'angebot', erfuelltBei: ['d1'], text: 'Physisches Produkt für Endkund:innen' },
+  { frage: 'umsatz', erfuelltBei: ['a2', 'a3', 'a4', 'a5'], text: 'Erste Umsätze' },
+];
 
 export const ACCELERATOR_KRITERIEN: readonly Kriterium[] = [
-  { frage: 'umsatz', erfuelltBei: ['b3', 'b4', 'b5'], text: 'Umsatz ab 10.000 € im Jahr' },
-  { frage: 'team', erfuelltBei: ['c3', 'c4'], text: 'Team ab 3 Personen' },
-  { frage: 'runway', erfuelltBei: ['d2', 'd3'], text: 'Runway von mindestens 6 Monaten' },
+  { frage: 'umsatz', erfuelltBei: ['a3', 'a4', 'a5'], text: 'Umsatz ab 10.000 € im Jahr' },
+  { frage: 'team', erfuelltBei: ['b3', 'b4'], text: 'Team ab 3 Personen' },
+  { frage: 'runway', erfuelltBei: ['c2', 'c3'], text: 'Runway von mindestens 6 Monaten' },
 ];
 
 export interface KriteriumErgebnis {
@@ -32,51 +36,46 @@ export interface Empfehlung {
   readonly kriterien: readonly KriteriumErgebnis[];
 }
 
-export function istGoods(antworten: Antworten): boolean {
-  return antworten[GOODS_ANTWORT.frage] === GOODS_ANTWORT.code;
-}
-
-export function fragenFuer(antworten: Antworten): readonly Frage[] {
-  return istGoods(antworten) ? FRAGEN.filter((f) => f.id === GOODS_ANTWORT.frage) : FRAGEN;
-}
-
-export function istVollstaendig(antworten: Antworten): boolean {
-  return fragenFuer(antworten).every((f) => antworten[f.id] !== undefined);
-}
-
-export function empfehle(antworten: Antworten): Empfehlung {
-  if (istGoods(antworten)) {
-    return {
-      programm: 'goods',
-      begruendung: 'Ihr entwickelt ein physisches Produkt für Endkund:innen. Genau dafür ist Goods gedacht.',
-      kriterien: [],
-    };
-  }
-
-  const kriterien = ACCELERATOR_KRITERIEN.map((k) => ({
+function pruefe(kriterien: readonly Kriterium[], antworten: Antworten): KriteriumErgebnis[] {
+  return kriterien.map((k) => ({
     text: k.text,
     erfuellt: k.erfuelltBei.includes(antworten[k.frage] ?? ''),
   }));
+}
 
-  if (kriterien.every((k) => k.erfuellt)) {
+const alleErfuellt = (ergebnisse: readonly KriteriumErgebnis[]): boolean => ergebnisse.every((k) => k.erfuellt);
+
+export function empfehle(antworten: Antworten): Empfehlung {
+  const goods = pruefe(GOODS_KRITERIEN, antworten);
+  if (alleErfuellt(goods)) {
     return {
-      programm: 'ifa',
-      begruendung: 'Ihr erfüllt alle drei Kriterien, mit denen Startups in den Accelerator starten.',
-      kriterien,
+      programm: 'goods',
+      begruendung: 'Ihr verkauft schon ein physisches Produkt. Genau dafür ist Goods gedacht.',
+      kriterien: goods,
     };
   }
 
+  const accelerator = pruefe(ACCELERATOR_KRITERIEN, antworten);
+  if (alleErfuellt(accelerator)) {
+    return {
+      programm: 'ifa',
+      begruendung: 'Ihr erfüllt alle drei Kriterien, mit denen Startups in den Accelerator starten.',
+      kriterien: accelerator,
+    };
+  }
+
+  const produktOhneUmsatz = goods[0]!.erfuellt;
   return {
     programm: 'ifi',
-    begruendung:
-      'Für den Accelerator sollten alle drei Kriterien erfüllt sein. Der Inkubator bringt euch genau dorthin.',
-    kriterien,
+    begruendung: produktOhneUmsatz
+      ? 'Für den Accelerator sollten alle drei Kriterien erfüllt sein. Goods kommt infrage, sobald euer Produkt erste Umsätze macht. Bis dahin ist der Inkubator euer Weg.'
+      : 'Für den Accelerator sollten alle drei Kriterien erfüllt sein. Der Inkubator bringt euch genau dorthin.',
+    kriterien: accelerator,
   };
 }
 
 export function antwortCodes(antworten: Antworten): string {
-  return fragenFuer(antworten)
-    .map((f) => antworten[f.id])
+  return FRAGEN.map((f) => antworten[f.id])
     .filter((code): code is string => code !== undefined)
     .join('-');
 }
