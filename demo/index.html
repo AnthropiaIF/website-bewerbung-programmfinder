@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Programm-Finder lokal</title>
+    <style>
+      body { margin: 0; padding: 2rem 1rem; font-family: system-ui, sans-serif; }
+      main { max-width: 48rem; margin: 0 auto; }
+      nav a { margin-right: 1rem; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <nav>
+        <a href="./">Finder</a>
+        <a href="./?programm=ifi">Direkt Inkubator</a>
+        <a href="./?programm=ifa">Direkt Accelerator</a>
+        <a href="./?programm=goods">Direkt Goods</a>
+        <a href="./?utm_source=test&amp;utm_campaign=batch16">Mit UTM</a>
+      </nav>
+      <h1>Bewerben</h1>
+      <div id="if-finder">
+        <ul>
+          <li><a href="https://impact-factory.de/programm-inkubator">Inkubator</a></li>
+          <li><a href="https://impact-factory.de/programm-ifanrw">Accelerator</a></li>
+          <li><a href="https://impact-factory.de/programm-ubersicht">Goods</a></li>
+        </ul>
+      </div>
+    </main>
+    <script>
+      window.dataLayer = [];
+      const push = window.dataLayer.push.bind(window.dataLayer);
+      window.dataLayer.push = (e) => { console.log('dataLayer', e); return push(e); };
+    </script>
+    <script src="finder.js" defer></script>
+  </body>
+</html>
