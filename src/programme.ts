@@ -1,9 +1,9 @@
 import daten from './programme.json';
+import { fuelle, type Texte } from './texte';
 
 export type ProgrammId = 'ifi' | 'ifa' | 'goods';
 export type Status = 'offen' | 'vormerken' | 'demnaechst';
 
-// Offene Programme brauchen `frist`, alle anderen `start`, damit nie „geschlossen“ ohne Termin erscheint.
 export interface Programm {
   readonly id: ProgrammId;
   readonly name: string;
@@ -23,23 +23,24 @@ export function istProgrammId(wert: string | null): wert is ProgrammId {
   return PROGRAMME.some((p) => p.id === wert);
 }
 
-export function programm(id: ProgrammId): Programm {
-  return PROGRAMME.find((p) => p.id === id)!;
-}
-
 export function zielUrlFuer(p: Programm): string {
   return p.status === 'offen' && p.bewerbenUrl ? p.bewerbenUrl : p.vormerkenUrl;
 }
 
-export function buttonText(p: Programm): string {
-  return p.status === 'offen' ? `Jetzt für ${p.nameAkkusativ} bewerben` : `Für ${p.nameAkkusativ} vormerken`;
+export function buttonText(p: Programm, texte: Texte): string {
+  return fuelle(p.status === 'offen' ? texte.buttonBewerben : texte.buttonVormerken, { programm: p.nameAkkusativ });
 }
 
-export function zeitraumText(p: Programm): string {
+// Rückfalltexte, falls im Embed eine Frist oder ein Start fehlt: nie „geschlossen“ ohne Hinweis.
+export function zeitraumText(p: Programm, texte: Texte): string {
   if (p.status === 'offen') {
-    return `Bewerbung für ${p.batch} offen bis einschließlich ${datumDeutsch(p.frist!)}.`;
+    return p.frist
+      ? fuelle(texte.zeitraumOffen, { batch: p.batch, frist: datumDeutsch(p.frist) })
+      : fuelle(texte.zeitraumOffenOhneFrist, { batch: p.batch });
   }
-  return `Die Bewerbungsphase für ${p.batch} beginnt ${p.start}. Merkt euch jetzt den Start vor.`;
+  return p.start
+    ? fuelle(texte.zeitraumVormerken, { batch: p.batch, start: p.start })
+    : fuelle(texte.zeitraumVormerkenOhneStart, { batch: p.batch });
 }
 
 function datumDeutsch(isoDatum: string): string {

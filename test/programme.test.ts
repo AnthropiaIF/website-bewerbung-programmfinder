@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { PROGRAMME, buttonText, zeitraumText, zielUrlFuer } from '../src/programme';
+import { TEXTE } from '../src/texte';
 
 describe('programme.json', () => {
   it('enthält jedes Programm genau einmal', () => {
@@ -26,15 +27,24 @@ describe('Beschriftung je Status', () => {
 
   it('offen: bewerben mit Frist', () => {
     const offen = { ...inkubator, status: 'offen' as const, batch: 'Batch 16', frist: '2026-12-14' };
-    expect(buttonText(offen)).toBe('Jetzt für den Inkubator bewerben');
-    expect(zeitraumText(offen)).toBe('Bewerbung für Batch 16 offen bis einschließlich 14.12.2026.');
+    expect(buttonText(offen, TEXTE)).toBe('Jetzt für den Inkubator bewerben');
+    expect(zeitraumText(offen, TEXTE)).toBe('Bewerbung für Batch 16 offen bis einschließlich 14.12.2026.');
     expect(zielUrlFuer(offen)).toBe(offen.bewerbenUrl);
   });
 
   it('vormerken: vormerken mit Starttermin', () => {
     const vormerken = { ...inkubator, status: 'vormerken' as const, batch: 'Batch 17', start: 'im Mai' };
-    expect(buttonText(vormerken)).toBe('Für den Inkubator vormerken');
-    expect(zeitraumText(vormerken)).toBe('Die Bewerbungsphase für Batch 17 beginnt im Mai. Merkt euch jetzt den Start vor.');
+    expect(buttonText(vormerken, TEXTE)).toBe('Für den Inkubator vormerken');
+    expect(zeitraumText(vormerken, TEXTE)).toBe(
+      'Die Bewerbungsphase für Batch 17 beginnt im Mai. Merkt euch jetzt den Start vor.',
+    );
     expect(zielUrlFuer(vormerken)).toBe(vormerken.vormerkenUrl);
+  });
+
+  it('fällt ohne Frist oder Start auf einen Hinweis ohne Termin zurück', () => {
+    expect(zeitraumText({ ...inkubator, status: 'offen', frist: null }, TEXTE)).toBe('Bewerbung für Batch 16 offen.');
+    expect(zeitraumText({ ...inkubator, status: 'vormerken', start: null }, TEXTE)).toBe(
+      'Merkt euch jetzt den Start der nächsten Bewerbungsphase vor.',
+    );
   });
 });

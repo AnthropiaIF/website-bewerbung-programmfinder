@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { FRAGEN, type FrageId } from '../src/fragen';
-import { antwortCodes, empfehle, type Antworten } from '../src/regeln';
+import { STANDARD_INHALTE } from '../src/inhalte';
+import { antwortCodes, empfehle as empfehleMit, type Antworten } from '../src/regeln';
+
+const empfehle = (antworten: Antworten) => empfehleMit(antworten, STANDARD_INHALTE);
 
 function codes(id: FrageId): string[] {
   return FRAGEN.find((f) => f.id === id)!.optionen.map((o) => o.code);

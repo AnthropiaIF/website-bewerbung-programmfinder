@@ -1,17 +1,10 @@
 import { sendeEreignis } from './ereignisse';
-import { FRAGEN, type Frage } from './fragen';
-import {
-  PROGRAMME,
-  buttonText,
-  istProgrammId,
-  programm,
-  zeitraumText,
-  zielUrlFuer,
-  type Programm,
-  type ProgrammId,
-} from './programme';
+import type { Frage } from './fragen';
+import type { Inhalte } from './inhalte';
+import { buttonText, istProgrammId, zeitraumText, zielUrlFuer, type Programm, type ProgrammId } from './programme';
 import { antwortCodes, empfehle, type Antworten, type Empfehlung } from './regeln';
 import { fuegeStilEin } from './stil';
+import { fuelle } from './texte';
 import { mitHerkunft, type Quelle } from './weiterleitung';
 
 interface Zustand {
@@ -61,11 +54,8 @@ function kalenderSymbol(): SVGElement {
   return svg;
 }
 
-function zeitraum(p: Programm): HTMLElement {
-  return el('p', { class: 'iff-zeitraum' }, kalenderSymbol(), el('span', {}, zeitraumText(p)));
-}
-
-export function starteFinder(container: HTMLElement, seitenUrl: string): void {
+export function starteFinder(container: HTMLElement, seitenUrl: string, inhalte: Inhalte): void {
+  const { fragen, programme, texte } = inhalte;
   fuegeStilEin(container.ownerDocument);
   container.classList.add('iff');
 
@@ -75,6 +65,10 @@ export function starteFinder(container: HTMLElement, seitenUrl: string): void {
 
   const zustand: Zustand = { quelle: 'finder', schritt: 0, antworten: {}, gestartet: false };
 
+  function programm(id: ProgrammId): Programm {
+    return programme.find((p) => p.id === id)!;
+  }
+
   function zeige(teile: Kind[], fokussieren: boolean): void {
     inhalt.replaceChildren(el('div', { class: 'iff-ansicht' }, ...teile));
     if (fokussieren) {
@@ -82,14 +76,26 @@ export function starteFinder(container: HTMLElement, seitenUrl: string): void {
     }
   }
 
+  function zeitraum(p: Programm): HTMLElement {
+    return el('p', { class: 'iff-zeitraum' }, kalenderSymbol(), el('span', {}, zeitraumText(p, texte)));
+  }
+
   function weg(label: string, titel: string, text: string, aktion: string, beiKlick: () => void): HTMLElement {
     const element = el(
       'button',
       { type: 'button', class: 'iff-weg' },
-      el('span', { class: 'iff-weg-label' }, label),
-      el('span', { class: 'iff-weg-titel' }, titel),
-      el('span', { class: 'iff-weg-text' }, text),
-      el('span', { class: 'iff-weg-aktion' }, aktion),
+      el(
+        'span',
+        { class: 'iff-weg-kopf' },
+        el('span', { class: 'iff-weg-label' }, label),
+        el('span', { class: 'iff-weg-titel' }, titel),
+      ),
+      el(
+        'span',
+        { class: 'iff-weg-fuss' },
+        el('span', { class: 'iff-weg-text' }, text),
+        el('span', { class: 'iff-weg-aktion' }, aktion),
+      ),
     );
     element.addEventListener('click', beiKlick);
     return element;
@@ -99,32 +105,20 @@ export function starteFinder(container: HTMLElement, seitenUrl: string): void {
     ansage.textContent = '';
     zeige(
       [
-        el('p', { class: 'iff-eyebrow' }, 'Bewerbung'),
-        el('h2', { class: 'iff-titel', tabindex: '-1' }, 'Wie wollt ihr starten?'),
+        el('p', { class: 'iff-eyebrow' }, texte.startEyebrow),
+        el('h2', { class: 'iff-titel', tabindex: '-1' }, texte.startTitel),
         el(
           'div',
           { class: 'iff-wege' },
-          weg(
-            'Programm-Finder',
-            'Wir sind uns noch unsicher.',
-            'Fünf kurze Fragen, dann bekommt ihr eine Empfehlung.',
-            'Programm finden',
-            () => {
-              zustand.quelle = 'finder';
-              zustand.schritt = 0;
-              zeigeFrage(true);
-            },
-          ),
-          weg(
-            'Direkt bewerben',
-            'Wir wissen schon, wohin.',
-            'Wählt euer Programm und geht direkt zur Bewerbung.',
-            'Programm wählen',
-            () => {
-              sendeEreignis('finder_direktwahl');
-              zeigeDirektwahl(true);
-            },
-          ),
+          weg(texte.finderLabel, texte.finderTitel, texte.finderText, texte.finderAktion, () => {
+            zustand.quelle = 'finder';
+            zustand.schritt = 0;
+            zeigeFrage(true);
+          }),
+          weg(texte.direktLabel, texte.direktTitel, texte.direktText, texte.direktAktion, () => {
+            sendeEreignis('finder_direktwahl');
+            zeigeDirektwahl(true);
+          }),
         ),
       ],
       fokussieren,
@@ -135,27 +129,23 @@ export function starteFinder(container: HTMLElement, seitenUrl: string): void {
     zustand.quelle = 'direktwahl';
     zeige(
       [
-        el('p', { class: 'iff-eyebrow' }, 'Direkt bewerben'),
-        el('h2', { class: 'iff-titel', tabindex: '-1' }, 'Für welches Programm wollt ihr euch bewerben?'),
-        el('ul', { class: 'iff-karten' }, ...PROGRAMME.map((p) => programmKarte(p, null))),
-        el(
-          'div',
-          { class: 'iff-weiteres' },
-          knopf('iff-link iff-link--zurueck', 'Zurück zur Auswahl', () => zeigeStart(true)),
-        ),
+        el('p', { class: 'iff-eyebrow' }, texte.direktLabel),
+        el('h2', { class: 'iff-titel', tabindex: '-1' }, texte.direktwahlTitel),
+        el('ul', { class: 'iff-karten' }, ...programme.map((p) => programmKarte(p, null))),
+        el('div', { class: 'iff-weiteres' }, knopf('iff-link iff-link--zurueck', texte.zurueckZurAuswahl, () => zeigeStart(true))),
       ],
       fokussieren,
     );
   }
 
   function fortschritt(): HTMLElement {
-    const balken = el('div', { class: 'iff-fortschritt', 'aria-hidden': 'true', style: `--_schritte: ${FRAGEN.length}` });
-    FRAGEN.forEach((_, index) => balken.append(el('span', index <= zustand.schritt ? { class: 'ist-erreicht' } : {})));
+    const balken = el('div', { class: 'iff-fortschritt', 'aria-hidden': 'true', style: `--_schritte: ${fragen.length}` });
+    fragen.forEach((_, index) => balken.append(el('span', index <= zustand.schritt ? { class: 'ist-erreicht' } : {})));
     return balken;
   }
 
   function zeigeFrage(fokussieren: boolean): void {
-    const frage = FRAGEN[zustand.schritt]!;
+    const frage = fragen[zustand.schritt]!;
     ansage.textContent = '';
 
     const optionen = frage.optionen.map((option) => {
@@ -171,15 +161,19 @@ export function starteFinder(container: HTMLElement, seitenUrl: string): void {
 
     const zurueck =
       zustand.schritt > 0
-        ? knopf('iff-link iff-link--zurueck', 'Zurück', () => {
+        ? knopf('iff-link iff-link--zurueck', texte.zurueck, () => {
             zustand.schritt -= 1;
             zeigeFrage(true);
           })
-        : knopf('iff-link iff-link--zurueck', 'Zurück zur Auswahl', () => zeigeStart(true));
+        : knopf('iff-link iff-link--zurueck', texte.zurueckZurAuswahl, () => zeigeStart(true));
 
     zeige(
       [
-        el('p', { class: 'iff-eyebrow' }, `Programm-Finder · Frage ${zustand.schritt + 1} von ${FRAGEN.length}`),
+        el(
+          'p',
+          { class: 'iff-eyebrow' },
+          fuelle(texte.frageZaehler, { nummer: String(zustand.schritt + 1), anzahl: String(fragen.length) }),
+        ),
         fortschritt(),
         el('h2', { class: 'iff-titel', id: 'iff-frage-titel', tabindex: '-1' }, frage.text),
         frage.hinweis ? el('p', { class: 'iff-hinweis' }, frage.hinweis) : null,
@@ -197,11 +191,11 @@ export function starteFinder(container: HTMLElement, seitenUrl: string): void {
     }
     zustand.antworten[frage.id] = code;
 
-    if (zustand.schritt + 1 < FRAGEN.length) {
+    if (zustand.schritt + 1 < fragen.length) {
       zustand.schritt += 1;
       zeigeFrage(true);
     } else {
-      const empfehlung = empfehle(zustand.antworten);
+      const empfehlung = empfehle(zustand.antworten, inhalte);
       zeigeErgebnis(empfehlung.programm, empfehlung, true);
     }
   }
@@ -217,7 +211,7 @@ export function starteFinder(container: HTMLElement, seitenUrl: string): void {
       },
       seitenUrl,
     );
-    const link = el('a', { class: klasse, href }, ...mitPfeil(buttonText(p)));
+    const link = el('a', { class: klasse, href }, ...mitPfeil(buttonText(p, texte)));
     link.addEventListener('click', () =>
       sendeEreignis('finder_klick', { programm: p.id, quelle: zustand.quelle, empfohlen: p.id === empfohlen }),
     );
@@ -247,12 +241,12 @@ export function starteFinder(container: HTMLElement, seitenUrl: string): void {
     const liste = el(
       'ul',
       { class: 'iff-karten', id: 'iff-alternativen', hidden: '' },
-      ...PROGRAMME.filter((p) => p.id !== empfohlen).map((p) => programmKarte(p, empfohlen)),
+      ...programme.filter((p) => p.id !== empfohlen).map((p) => programmKarte(p, empfohlen)),
     );
     const umschalter = el(
       'button',
       { type: 'button', class: 'iff-link', 'aria-expanded': 'false', 'aria-controls': 'iff-alternativen' },
-      'Ich möchte ein anderes Programm wählen',
+      texte.anderesProgramm,
     );
     umschalter.addEventListener('click', () => {
       const oeffnen = liste.hidden;
@@ -267,9 +261,9 @@ export function starteFinder(container: HTMLElement, seitenUrl: string): void {
 
   function folgeAktion(): HTMLElement {
     if (zustand.quelle === 'finder') {
-      return knopf('iff-link iff-link--zurueck', 'Antworten ändern', () => zeigeFrage(true));
+      return knopf('iff-link iff-link--zurueck', texte.antwortenAendern, () => zeigeFrage(true));
     }
-    return knopf('iff-link', 'Unsicher? Mit ein paar Fragen das passende Programm finden', () => {
+    return knopf('iff-link', texte.unsicher, () => {
       zustand.quelle = 'finder';
       zustand.schritt = 0;
       zeigeFrage(true);
@@ -278,7 +272,7 @@ export function starteFinder(container: HTMLElement, seitenUrl: string): void {
 
   function zeigeErgebnis(empfohlen: ProgrammId, empfehlung: Empfehlung | null, fokussieren: boolean): void {
     const p = programm(empfohlen);
-    const vorzeile = empfehlung ? 'Nach euren Angaben passt am besten:' : 'Euer gewähltes Programm:';
+    const vorzeile = empfehlung ? texte.empfehlungVorzeile : texte.gewaehltVorzeile;
     const intro = empfehlung ? empfehlung.intro : p.beschreibung;
 
     zeige(
@@ -286,7 +280,7 @@ export function starteFinder(container: HTMLElement, seitenUrl: string): void {
         el(
           'section',
           { class: `iff-ergebnis iff-programm--${p.id}`, 'aria-labelledby': 'iff-ergebnis-titel' },
-          el('p', { class: 'iff-eyebrow' }, empfehlung ? 'Unsere Empfehlung' : 'Programm-Finder'),
+          el('p', { class: 'iff-eyebrow' }, empfehlung ? texte.empfehlungEyebrow : texte.gewaehltEyebrow),
           el(
             'h2',
             { class: 'iff-titel', id: 'iff-ergebnis-titel', tabindex: '-1' },

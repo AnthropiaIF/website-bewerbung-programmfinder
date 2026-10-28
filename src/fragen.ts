@@ -1,6 +1,7 @@
 // Antwort-Codes (a1, b3 …) wandern als Parameter `antworten` in die Bewerbungstools und in die Auswertung.
 // Nach dem Go-live bestehende Codes nicht mehr umnummerieren, neue Optionen hinten anhängen.
 // `merkmal` erscheint als Haken auf dem Ergebnis-Screen, wenn die Antwort für den Inkubator spricht.
+// Texte, Hinweise, Labels und Merkmale lassen sich im Webflow-Embed überschreiben, Codes nicht.
 
 export type FrageId = 'gegruendet' | 'umsatz' | 'team' | 'runway' | 'angebot';
 
@@ -87,6 +88,10 @@ export const FRAGEN: readonly Frage[] = [
   },
 ];
 
-export function merkmalFuer(frageId: FrageId, code: string | undefined): string | undefined {
-  return FRAGEN.find((f) => f.id === frageId)?.optionen.find((o) => o.code === code)?.merkmal;
+export function merkmalFuer(
+  fragen: readonly Frage[],
+  frageId: FrageId,
+  code: string | undefined,
+): string | undefined {
+  return fragen.find((f) => f.id === frageId)?.optionen.find((o) => o.code === code)?.merkmal;
 }

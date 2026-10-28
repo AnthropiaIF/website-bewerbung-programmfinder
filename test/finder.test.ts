@@ -1,6 +1,9 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it } from 'vitest';
-import { starteFinder } from '../src/finder';
+import { starteFinder as starteFinderMit } from '../src/finder';
+import { STANDARD_INHALTE, ladeInhalte } from '../src/inhalte';
+
+const starteFinder = (ziel: HTMLElement, seitenUrl: string) => starteFinderMit(ziel, seitenUrl, STANDARD_INHALTE);
 
 const SEITE = 'https://impact-factory.de/bewerben';
 
@@ -217,5 +220,27 @@ describe('ohne dataLayer', () => {
     delete window.dataLayer;
     starteFinder(container, SEITE);
     expect(() => klicke('Wir wissen schon, wohin')).not.toThrow();
+  });
+});
+
+describe('Inhalte aus dem Webflow-Embed', () => {
+  it('zeigt überschriebene Texte, Fristen und Fragen', () => {
+    const inhalte = ladeInhalte(
+      {
+        programme: { ifi: { frist: '2026-12-20', batch: 'Batch 16 (Winter)' } },
+        texte: { startTitel: 'Wo steht ihr?' },
+        fragen: { gegruendet: { text: 'Gibt es euer Unternehmen schon?' } },
+        optionen: { a2: { label: 'Noch nicht' } },
+      },
+      () => {},
+    );
+    starteFinderMit(container, SEITE, inhalte);
+    expect(titel()).toBe('Wo steht ihr?');
+
+    klicke('Wir sind uns noch unsicher');
+    expect(titel()).toBe('Gibt es euer Unternehmen schon?');
+
+    beantworteAlle('Noch nicht', 'Noch keine Umsätze', 'Ich gründe allein', 'Nicht relevant', 'Etwas anderes');
+    expect(zeitraum()).toBe('Bewerbung für Batch 16 (Winter) offen bis einschließlich 20.12.2026.');
   });
 });
