@@ -46,7 +46,7 @@ function gruende(): string[] {
 }
 
 function zeitraum(): string {
-  return container.querySelector('.iff-ergebnis .iff-zeitraum')!.textContent!;
+  return container.querySelector('.iff-ergebnis .iff-zeitraum-text')!.textContent!;
 }
 
 function hauptLink(): URL {
@@ -104,6 +104,22 @@ describe('Direktwahl', () => {
     expect(titel()).toBe('Habt ihr schon gegründet?');
     klicke('Ja, wir haben');
     expect(titel()).toBe('Wie hoch ist euer Umsatz pro Jahr?');
+  });
+});
+
+describe('Status-Etikett', () => {
+  it('kennzeichnet offene und folgende Bewerbungsphasen', () => {
+    starteFinder(container, SEITE);
+    klicke('Wir wissen schon, wohin');
+    const etiketten = [...container.querySelectorAll('.iff-karte .iff-zeitraum')].map((z) => [
+      z.className,
+      z.querySelector('.iff-status')!.textContent,
+    ]);
+    expect(etiketten).toEqual([
+      ['iff-zeitraum ist-offen', 'Bewerbung offen'],
+      ['iff-zeitraum ist-folgend', 'Bewerbung folgt'],
+      ['iff-zeitraum ist-folgend', 'Bewerbung folgt'],
+    ]);
   });
 });
 

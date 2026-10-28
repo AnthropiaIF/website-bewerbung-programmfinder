@@ -77,7 +77,13 @@ export function starteFinder(container: HTMLElement, seitenUrl: string, inhalte:
   }
 
   function zeitraum(p: Programm): HTMLElement {
-    return el('p', { class: 'iff-zeitraum' }, kalenderSymbol(), el('span', {}, zeitraumText(p, texte)));
+    const offen = p.status === 'offen';
+    return el(
+      'div',
+      { class: `iff-zeitraum ${offen ? 'ist-offen' : 'ist-folgend'}` },
+      el('span', { class: 'iff-status' }, offen ? texte.statusOffen : texte.statusFolgt),
+      el('p', { class: 'iff-zeitraum-text' }, kalenderSymbol(), el('span', {}, zeitraumText(p, texte))),
+    );
   }
 
   function weg(label: string, titel: string, text: string, aktion: string, beiKlick: () => void): HTMLElement {
@@ -222,10 +228,8 @@ export function starteFinder(container: HTMLElement, seitenUrl: string, inhalte:
     return el(
       'li',
       { class: `iff-karte iff-programm--${p.id}` },
-      el('h3', { class: 'iff-karte-name' }, p.name),
-      el('p', { class: 'iff-karte-text' }, p.beschreibung),
-      programmLink(p, empfohlen, 'iff-button-sekundaer'),
-      zeitraum(p),
+      el('div', { class: 'iff-karte-kopf' }, el('h3', { class: 'iff-karte-name' }, p.name), el('p', { class: 'iff-karte-text' }, p.beschreibung)),
+      el('div', { class: 'iff-karte-fuss' }, zeitraum(p), programmLink(p, empfohlen, 'iff-button-sekundaer')),
     );
   }
 

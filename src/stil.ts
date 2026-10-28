@@ -90,9 +90,19 @@ const CSS = `
 .iff-haken { font-weight: 700; }
 .iff-cta { margin-top: 32px; }
 .iff-zeitraum {
-  display: flex; align-items: flex-start; gap: 12px; margin: 28px 0 0; padding-top: 20px;
-  font-size: 15px; font-weight: 500; line-height: 1.4; border-top: 2px solid var(--_ink);
+  display: flex; flex-direction: column; align-items: flex-start; gap: 12px; margin: 28px 0 0; padding-top: 20px;
+  border-top: 2px solid var(--_ink);
 }
+.iff-zeitraum-text { display: flex; align-items: flex-start; gap: 12px; margin: 0; font-size: 15px; font-weight: 500; line-height: 1.4; }
+.iff-status {
+  display: inline-flex; align-items: center; gap: 8px; padding: 5px 10px;
+  font-size: 12px; font-weight: 600; line-height: 1.2; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--_ink); border: 2px solid var(--_ink);
+}
+.iff-status::before { content: ""; width: 8px; height: 8px; flex: none; border: 2px solid currentColor; }
+.ist-offen .iff-status { color: #fff; background: var(--_ink); }
+.ist-offen .iff-status::before { background: currentColor; }
+.ist-folgend .iff-status { border-style: dashed; }
 .iff-symbol {
   width: 22px; height: 22px; flex: none; margin-top: -1px;
   fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: square;
@@ -135,15 +145,19 @@ const CSS = `
 .iff-weg-aktion::after { content: "→"; transition: transform 240ms var(--_ease); }
 .iff-weg:hover .iff-weg-aktion::after { transform: translateX(4px); }
 
-.iff-karten {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 12px;
-  width: 100%; margin: 0; padding: 0; list-style: none;
-}
+.iff-karten { display: grid; gap: 12px; width: 100%; margin: 0; padding: 0; list-style: none; container-type: inline-size; }
 .iff-titel + .iff-karten { margin-top: 28px; }
 .iff-karten[hidden] { display: none; }
 .iff-karte {
-  display: grid; grid-row: span 4; grid-template-rows: subgrid; row-gap: 12px; justify-items: start; align-content: start;
-  padding: 24px; background: var(--_flaeche); border-radius: var(--_radius);
+  display: flex; flex-direction: column; gap: 20px;
+  padding: 24px clamp(24px, 3vw, 36px); background: var(--_flaeche); border-radius: var(--_radius);
+}
+.iff-karte-kopf { display: flex; flex-direction: column; gap: 10px; }
+.iff-karte-fuss { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
+@container (min-width: 640px) {
+  .iff-karte { flex-direction: row; justify-content: space-between; gap: 40px; padding: 32px 36px; }
+  .iff-karte-kopf { flex: 7 1 0; }
+  .iff-karte-fuss { flex: 5 1 0; }
 }
 .iff-karte-name {
   display: flex; align-items: center; gap: 10px; margin: 0;
@@ -151,12 +165,10 @@ const CSS = `
 }
 .iff-karte-name::before { content: ""; width: 14px; height: 14px; background: var(--_programm); border: 2px solid var(--_ink); flex: none; }
 .iff-karte-text { margin: 0; color: var(--_gedaempft); }
-.iff-karte .iff-button-sekundaer { align-self: start; }
-.iff-karte .iff-zeitraum {
-  align-self: start; margin-top: 0; padding-top: 14px; font-size: 14px; font-weight: 400; color: var(--_gedaempft);
-  border-top-width: 1px; border-top-color: #c9cccd;
-}
+.iff-karte .iff-zeitraum { gap: 10px; margin: 0; padding: 0; border: 0; }
+.iff-karte .iff-zeitraum-text { font-size: 14px; font-weight: 400; color: var(--_gedaempft); }
 .iff-karte .iff-symbol { width: 18px; height: 18px; margin-top: 0; }
+.iff-karte .ist-offen .iff-status { background: var(--_teal); border-color: var(--_teal); }
 
 .iff :focus-visible { outline: 3px solid var(--_teal-tief); outline-offset: 3px; }
 .iff-ergebnis :focus-visible { outline-color: var(--_ink); }
