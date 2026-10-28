@@ -169,6 +169,11 @@ const CSS = `
 .iff-karte .iff-zeitraum-text { font-size: 14px; font-weight: 400; color: var(--_gedaempft); }
 .iff-karte .iff-symbol { width: 18px; height: 18px; margin-top: 0; }
 .iff-karte .ist-offen .iff-status { background: var(--_teal); border-color: var(--_teal); }
+.iff-karte .iff-button-sekundaer {
+  background: var(--_programm);
+  transition: transform 240ms var(--_ease), box-shadow 240ms var(--_ease);
+}
+.iff-karte .iff-button-sekundaer:hover { background: var(--_programm); transform: translate(-3px, -3px); box-shadow: 6px 6px 0 var(--_teal); }
 
 .iff :focus-visible { outline: 3px solid var(--_teal-tief); outline-offset: 3px; }
 .iff-ergebnis :focus-visible { outline-color: var(--_ink); }
@@ -190,7 +195,7 @@ const CSS = `
 }
 @media (prefers-reduced-motion: reduce) {
   .iff *, .iff-ansicht { animation: none !important; transition: none !important; }
-  .iff-option:hover, .iff-weg:hover { transform: none; }
+  .iff-option:hover, .iff-weg:hover, .iff-karte .iff-button-sekundaer:hover { transform: none; }
 }
 `;
 
