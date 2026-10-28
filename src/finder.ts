@@ -38,6 +38,12 @@ function el(tag: string, attribute: Record<string, string> = {}, ...kinder: Kind
   return element;
 }
 
+function knopf(klasse: string, text: string, beiKlick: () => void): HTMLElement {
+  const element = el('button', { type: 'button', class: klasse }, text);
+  element.addEventListener('click', beiKlick);
+  return element;
+}
+
 function mitPfeil(text: string): HTMLElement[] {
   return [el('span', {}, text), el('span', { class: 'iff-pfeil', 'aria-hidden': 'true' }, '→')];
 }
@@ -76,6 +82,72 @@ export function starteFinder(container: HTMLElement, seitenUrl: string): void {
     }
   }
 
+  function weg(label: string, titel: string, text: string, aktion: string, beiKlick: () => void): HTMLElement {
+    const element = el(
+      'button',
+      { type: 'button', class: 'iff-weg' },
+      el('span', { class: 'iff-weg-label' }, label),
+      el('span', { class: 'iff-weg-titel' }, titel),
+      el('span', { class: 'iff-weg-text' }, text),
+      el('span', { class: 'iff-weg-aktion' }, aktion),
+    );
+    element.addEventListener('click', beiKlick);
+    return element;
+  }
+
+  function zeigeStart(fokussieren: boolean): void {
+    ansage.textContent = '';
+    zeige(
+      [
+        el('p', { class: 'iff-eyebrow' }, 'Bewerbung'),
+        el('h2', { class: 'iff-titel', tabindex: '-1' }, 'Wie wollt ihr starten?'),
+        el(
+          'div',
+          { class: 'iff-wege' },
+          weg(
+            'Programm-Finder',
+            'Wir sind uns noch unsicher.',
+            'Fünf kurze Fragen, dann bekommt ihr eine Empfehlung.',
+            'Programm finden',
+            () => {
+              zustand.quelle = 'finder';
+              zustand.schritt = 0;
+              zeigeFrage(true);
+            },
+          ),
+          weg(
+            'Direkt bewerben',
+            'Wir wissen schon, wohin.',
+            'Wählt euer Programm und geht direkt zur Bewerbung.',
+            'Programm wählen',
+            () => {
+              sendeEreignis('finder_direktwahl');
+              zeigeDirektwahl(true);
+            },
+          ),
+        ),
+      ],
+      fokussieren,
+    );
+  }
+
+  function zeigeDirektwahl(fokussieren: boolean): void {
+    zustand.quelle = 'direktwahl';
+    zeige(
+      [
+        el('p', { class: 'iff-eyebrow' }, 'Direkt bewerben'),
+        el('h2', { class: 'iff-titel', tabindex: '-1' }, 'Für welches Programm wollt ihr euch bewerben?'),
+        el('ul', { class: 'iff-karten' }, ...PROGRAMME.map((p) => programmKarte(p, null))),
+        el(
+          'div',
+          { class: 'iff-weiteres' },
+          knopf('iff-link iff-link--zurueck', 'Zurück zur Auswahl', () => zeigeStart(true)),
+        ),
+      ],
+      fokussieren,
+    );
+  }
+
   function fortschritt(): HTMLElement {
     const balken = el('div', { class: 'iff-fortschritt', 'aria-hidden': 'true', style: `--_schritte: ${FRAGEN.length}` });
     FRAGEN.forEach((_, index) => balken.append(el('span', index <= zustand.schritt ? { class: 'ist-erreicht' } : {})));
@@ -87,24 +159,23 @@ export function starteFinder(container: HTMLElement, seitenUrl: string): void {
     ansage.textContent = '';
 
     const optionen = frage.optionen.map((option) => {
-      const knopf = el(
+      const element = el(
         'button',
         { type: 'button', class: 'iff-option', 'aria-pressed': String(zustand.antworten[frage.id] === option.code) },
         el('span', { class: 'iff-option-label' }, option.label),
         option.unterzeile ? el('span', { class: 'iff-option-unterzeile' }, option.unterzeile) : null,
       );
-      knopf.addEventListener('click', () => beantworte(frage, option.code));
-      return knopf;
+      element.addEventListener('click', () => beantworte(frage, option.code));
+      return element;
     });
 
-    let zurueck: HTMLElement | null = null;
-    if (zustand.schritt > 0) {
-      zurueck = el('button', { type: 'button', class: 'iff-link iff-link--zurueck' }, 'Zurück');
-      zurueck.addEventListener('click', () => {
-        zustand.schritt -= 1;
-        zeigeFrage(true);
-      });
-    }
+    const zurueck =
+      zustand.schritt > 0
+        ? knopf('iff-link iff-link--zurueck', 'Zurück', () => {
+            zustand.schritt -= 1;
+            zeigeFrage(true);
+          })
+        : knopf('iff-link iff-link--zurueck', 'Zurück zur Auswahl', () => zeigeStart(true));
 
     zeige(
       [
@@ -135,7 +206,7 @@ export function starteFinder(container: HTMLElement, seitenUrl: string): void {
     }
   }
 
-  function programmLink(p: Programm, empfohlen: ProgrammId, klasse: string): HTMLElement {
+  function programmLink(p: Programm, empfohlen: ProgrammId | null, klasse: string): HTMLElement {
     const href = mitHerkunft(
       zielUrlFuer(p),
       {
@@ -148,9 +219,20 @@ export function starteFinder(container: HTMLElement, seitenUrl: string): void {
     );
     const link = el('a', { class: klasse, href }, ...mitPfeil(buttonText(p)));
     link.addEventListener('click', () =>
-      sendeEreignis('finder_klick', { programm: p.id, empfohlen: p.id === empfohlen }),
+      sendeEreignis('finder_klick', { programm: p.id, quelle: zustand.quelle, empfohlen: p.id === empfohlen }),
     );
     return link;
+  }
+
+  function programmKarte(p: Programm, empfohlen: ProgrammId | null): HTMLElement {
+    return el(
+      'li',
+      { class: `iff-karte iff-programm--${p.id}` },
+      el('h3', { class: 'iff-karte-name' }, p.name),
+      el('p', { class: 'iff-karte-text' }, p.beschreibung),
+      programmLink(p, empfohlen, 'iff-button-sekundaer'),
+      zeitraum(p),
+    );
   }
 
   function gruendeListe(gruende: readonly string[]): HTMLElement {
@@ -164,17 +246,8 @@ export function starteFinder(container: HTMLElement, seitenUrl: string): void {
   function alternativen(empfohlen: ProgrammId): HTMLElement[] {
     const liste = el(
       'ul',
-      { class: 'iff-alternativen', id: 'iff-alternativen', hidden: '' },
-      ...PROGRAMME.filter((p) => p.id !== empfohlen).map((p) =>
-        el(
-          'li',
-          { class: `iff-alternative iff-programm--${p.id}` },
-          el('h3', { class: 'iff-alternative-name' }, p.name),
-          el('p', { class: 'iff-alternative-text' }, p.beschreibung),
-          programmLink(p, empfohlen, 'iff-button-sekundaer'),
-          zeitraum(p),
-        ),
-      ),
+      { class: 'iff-karten', id: 'iff-alternativen', hidden: '' },
+      ...PROGRAMME.filter((p) => p.id !== empfohlen).map((p) => programmKarte(p, empfohlen)),
     );
     const umschalter = el(
       'button',
@@ -194,20 +267,13 @@ export function starteFinder(container: HTMLElement, seitenUrl: string): void {
 
   function folgeAktion(): HTMLElement {
     if (zustand.quelle === 'finder') {
-      const aendern = el('button', { type: 'button', class: 'iff-link iff-link--zurueck' }, 'Antworten ändern');
-      aendern.addEventListener('click', () => zeigeFrage(true));
-      return aendern;
+      return knopf('iff-link iff-link--zurueck', 'Antworten ändern', () => zeigeFrage(true));
     }
-    const fragenStarten = el(
-      'button',
-      { type: 'button', class: 'iff-link' },
-      'Unsicher? Mit ein paar Fragen das passende Programm finden',
-    );
-    fragenStarten.addEventListener('click', () => {
+    return knopf('iff-link', 'Unsicher? Mit ein paar Fragen das passende Programm finden', () => {
       zustand.quelle = 'finder';
+      zustand.schritt = 0;
       zeigeFrage(true);
     });
-    return fragenStarten;
   }
 
   function zeigeErgebnis(empfohlen: ProgrammId, empfehlung: Empfehlung | null, fokussieren: boolean): void {
@@ -246,6 +312,6 @@ export function starteFinder(container: HTMLElement, seitenUrl: string): void {
     zustand.quelle = 'programmseite';
     zeigeErgebnis(direktProgramm, null, false);
   } else {
-    zeigeFrage(false);
+    zeigeStart(false);
   }
 }

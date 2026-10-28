@@ -31,6 +31,13 @@ describe('mitHerkunft', () => {
     expect(url.searchParams.get('quelle')).toBe('programmseite');
   });
 
+  it('lässt empfehlung weg, wenn es keine gibt', () => {
+    const url = new URL(
+      mitHerkunft('https://tool.example/', { ...HERKUNFT, quelle: 'direktwahl', empfehlung: null, antworten: '' }, 'https://impact-factory.de/bewerben'),
+    );
+    expect(Object.fromEntries(url.searchParams)).toEqual({ quelle: 'direktwahl', gewaehlt: 'ifi' });
+  });
+
   it('behält Parameter, die schon in der Ziel-URL stehen', () => {
     const url = new URL(mitHerkunft('https://tool.example/?kohorte=16', HERKUNFT, 'https://impact-factory.de/bewerben'));
     expect(url.searchParams.get('kohorte')).toBe('16');

@@ -112,24 +112,49 @@ const CSS = `
 .iff-button:hover .iff-pfeil, .iff-button-sekundaer:hover .iff-pfeil { transform: translateX(4px); }
 
 .iff-weiteres { display: flex; flex-direction: column; align-items: flex-start; gap: 20px; margin-top: 28px; }
-.iff-alternativen {
+.iff-wege { display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: 16px; margin-top: 28px; }
+.iff-weg {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 12px; width: 100%; min-height: 240px;
+  padding: clamp(24px, 3vw, 36px); text-align: left; cursor: pointer;
+  font: inherit; color: var(--_ink); background: #fff;
+  border: 2px solid var(--_ink); border-radius: var(--_radius);
+  transition: transform 240ms var(--_ease), box-shadow 240ms var(--_ease);
+}
+.iff-weg:hover { transform: translate(-4px, -4px); box-shadow: 8px 8px 0 var(--_teal); }
+.iff-weg-label { font-size: 13px; font-weight: 500; line-height: 1.3; letter-spacing: .08em; text-transform: uppercase; color: var(--_teal-tief); }
+.iff-weg-titel {
+  font-family: var(--_titel-font); font-weight: 500; font-size: clamp(26px, 3vw, 34px); line-height: 1.1; letter-spacing: -.02em;
+}
+.iff-weg-text { color: var(--_gedaempft); }
+.iff-weg-aktion {
+  display: inline-flex; gap: 10px; margin-top: auto; padding-bottom: 3px;
+  font-weight: 500; border-bottom: 2px solid currentColor;
+}
+.iff-weg-aktion::after { content: "→"; transition: transform 240ms var(--_ease); }
+.iff-weg:hover .iff-weg-aktion::after { transform: translateX(4px); }
+
+.iff-karten {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 12px;
   width: 100%; margin: 0; padding: 0; list-style: none;
 }
-.iff-alternativen[hidden] { display: none; }
-.iff-alternative { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 24px; background: var(--_flaeche); border-radius: var(--_radius); }
-.iff-alternative-name {
-  display: flex; align-items: center; gap: 10px; margin: 0;
-  font-family: var(--_titel-font); font-weight: 500; font-size: 24px; line-height: 1.2; letter-spacing: -.01em;
+.iff-titel + .iff-karten { margin-top: 28px; }
+.iff-karten[hidden] { display: none; }
+.iff-karte {
+  display: grid; grid-row: span 4; grid-template-rows: subgrid; row-gap: 12px; justify-items: start; align-content: start;
+  padding: 24px; background: var(--_flaeche); border-radius: var(--_radius);
 }
-.iff-alternative-name::before { content: ""; width: 14px; height: 14px; background: var(--_programm); border: 2px solid var(--_ink); flex: none; }
-.iff-alternative-text { margin: 0; color: var(--_gedaempft); }
-.iff-alternative .iff-button-sekundaer { margin-top: 6px; }
-.iff-alternative .iff-zeitraum {
-  margin-top: 6px; padding-top: 14px; font-size: 14px; font-weight: 400; color: var(--_gedaempft);
+.iff-karte-name {
+  display: flex; align-items: center; gap: 10px; margin: 0;
+  font-family: var(--_titel-font); font-weight: 500; font-size: 24px; line-height: 1.2; letter-spacing: -.01em; color: var(--_ink);
+}
+.iff-karte-name::before { content: ""; width: 14px; height: 14px; background: var(--_programm); border: 2px solid var(--_ink); flex: none; }
+.iff-karte-text { margin: 0; color: var(--_gedaempft); }
+.iff-karte .iff-button-sekundaer { align-self: start; }
+.iff-karte .iff-zeitraum {
+  align-self: start; margin-top: 0; padding-top: 14px; font-size: 14px; font-weight: 400; color: var(--_gedaempft);
   border-top-width: 1px; border-top-color: #c9cccd;
 }
-.iff-alternative .iff-symbol { width: 18px; height: 18px; margin-top: 0; }
+.iff-karte .iff-symbol { width: 18px; height: 18px; margin-top: 0; }
 
 .iff :focus-visible { outline: 3px solid var(--_teal-tief); outline-offset: 3px; }
 .iff-ergebnis :focus-visible { outline-color: var(--_ink); }
@@ -145,7 +170,7 @@ const CSS = `
 }
 @media (prefers-reduced-motion: reduce) {
   .iff *, .iff-ansicht { animation: none !important; transition: none !important; }
-  .iff-option:hover { transform: none; }
+  .iff-option:hover, .iff-weg:hover { transform: none; }
 }
 `;
 

@@ -1,10 +1,10 @@
 import type { ProgrammId } from './programme';
 
-export type Quelle = 'finder' | 'programmseite';
+export type Quelle = 'finder' | 'direktwahl' | 'programmseite';
 
 export interface Herkunft {
   readonly quelle: Quelle;
-  readonly empfehlung: ProgrammId;
+  readonly empfehlung: ProgrammId | null;
   readonly gewaehlt: ProgrammId;
   readonly antworten: string;
 }
@@ -13,7 +13,9 @@ export interface Herkunft {
 export function mitHerkunft(zielUrl: string, herkunft: Herkunft, seitenUrl: string): string {
   const ziel = new URL(zielUrl);
   ziel.searchParams.set('quelle', herkunft.quelle);
-  ziel.searchParams.set('empfehlung', herkunft.empfehlung);
+  if (herkunft.empfehlung) {
+    ziel.searchParams.set('empfehlung', herkunft.empfehlung);
+  }
   ziel.searchParams.set('gewaehlt', herkunft.gewaehlt);
   if (herkunft.antworten) {
     ziel.searchParams.set('antworten', herkunft.antworten);
