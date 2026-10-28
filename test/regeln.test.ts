@@ -9,7 +9,7 @@ function codes(id: FrageId): string[] {
   return FRAGEN.find((f) => f.id === id)!.optionen.map((o) => o.code);
 }
 
-const REIF = { umsatz: ['b3', 'b4', 'b5'], team: ['c3', 'c4'], runway: ['d2', 'd3'] };
+const REIF = { umsatz: ['b2', 'b3', 'b4', 'b5'], team: ['c3', 'c4'], runway: ['d2', 'd3'] };
 const MIT_UMSATZ = ['b2', 'b3', 'b4', 'b5'];
 
 const ALLE_KOMBINATIONEN = codes('gegruendet').flatMap((gegruendet) =>
@@ -72,7 +72,7 @@ describe('empfehle: Gründe sprechen immer für das empfohlene Programm', () => 
     expect(empfehlung.intro).toContain('skalieren');
     expect(empfehlung.gruende).toEqual([
       'Bereits gegründet',
-      'Umsatz ab 10.000 € im Jahr',
+      'Erste Umsätze',
       'Team ab 3 Personen',
       'Runway von mindestens 6 Monaten',
     ]);

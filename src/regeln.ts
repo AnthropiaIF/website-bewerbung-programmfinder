@@ -1,6 +1,7 @@
 // Regelbasierte Empfehlung, keine KI. Die Empfehlung ist ein Vorschlag; auf dem Ergebnis-Screen
 // bleibt jedes Programm wählbar.
-// Accelerator: Schwellen wie in der Schnellbewerbung (lib/routing), alle Kriterien nötig.
+// Accelerator: alle Kriterien nötig. Abweichend von der Schnellbewerbung zählt jeder Umsatz,
+// nicht erst ab 10.000 € (Entscheidung 28.10.2026).
 // Goods: vorläufige Regel bis zur Abstimmung mit dem Goods-Team.
 // Gegründet ist Voraussetzung für beide Accelerator-Programme (Annahme, noch zu bestätigen).
 
@@ -18,16 +19,17 @@ interface Kriterium {
 }
 
 const GEGRUENDET: Kriterium = { frage: 'gegruendet', erfuelltBei: ['a1'], text: 'kriteriumGegruendet' };
+const UMSATZ: Kriterium = { frage: 'umsatz', erfuelltBei: ['b2', 'b3', 'b4', 'b5'], text: 'kriteriumUmsatz' };
 
 export const GOODS_KRITERIEN: readonly Kriterium[] = [
   GEGRUENDET,
   { frage: 'angebot', erfuelltBei: ['e1'], text: 'kriteriumProdukt' },
-  { frage: 'umsatz', erfuelltBei: ['b2', 'b3', 'b4', 'b5'], text: 'kriteriumErsteUmsaetze' },
+  UMSATZ,
 ];
 
 export const ACCELERATOR_KRITERIEN: readonly Kriterium[] = [
   GEGRUENDET,
-  { frage: 'umsatz', erfuelltBei: ['b3', 'b4', 'b5'], text: 'kriteriumUmsatz' },
+  UMSATZ,
   { frage: 'team', erfuelltBei: ['c3', 'c4'], text: 'kriteriumTeam' },
   { frage: 'runway', erfuelltBei: ['d2', 'd3'], text: 'kriteriumRunway' },
 ];
