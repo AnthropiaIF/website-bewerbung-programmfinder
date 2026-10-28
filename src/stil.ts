@@ -18,7 +18,7 @@ const CSS = `
   font-size: 17px;
   line-height: 1.5;
   color: var(--_ink);
-  max-width: 52rem;
+  max-width: var(--iff-max-width, 64rem);
 }
 .iff *, .iff *::before, .iff *::after { box-sizing: border-box; }
 .iff-programm--ifi { --_programm: var(--iff-farbe-ifi, #e1bc48); }
@@ -112,22 +112,24 @@ const CSS = `
 .iff-button:hover .iff-pfeil, .iff-button-sekundaer:hover .iff-pfeil { transform: translateX(4px); }
 
 .iff-weiteres { display: flex; flex-direction: column; align-items: flex-start; gap: 20px; margin-top: 28px; }
-.iff-wege { display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: 16px; margin-top: 28px; }
+.iff-wege { display: grid; gap: 16px; margin-top: 28px; }
 .iff-weg {
-  display: flex; flex-direction: column; align-items: flex-start; gap: 12px; width: 100%; min-height: 240px;
-  padding: clamp(24px, 3vw, 36px); text-align: left; cursor: pointer;
+  display: flex; align-items: stretch; justify-content: space-between; gap: 40px; width: 100%; min-height: 200px;
+  padding: clamp(24px, 3.4vw, 44px); text-align: left; cursor: pointer;
   font: inherit; color: var(--_ink); background: #fff;
   border: 2px solid var(--_ink); border-radius: var(--_radius);
   transition: transform 240ms var(--_ease), box-shadow 240ms var(--_ease);
 }
 .iff-weg:hover { transform: translate(-4px, -4px); box-shadow: 8px 8px 0 var(--_teal); }
+.iff-weg-kopf { display: flex; flex-direction: column; gap: 14px; flex: 7 1 0; }
+.iff-weg-fuss { display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 20px; flex: 5 1 0; }
 .iff-weg-label { font-size: 13px; font-weight: 500; line-height: 1.3; letter-spacing: .08em; text-transform: uppercase; color: var(--_teal-tief); }
 .iff-weg-titel {
-  font-family: var(--_titel-font); font-weight: 500; font-size: clamp(26px, 3vw, 34px); line-height: 1.1; letter-spacing: -.02em;
+  font-family: var(--_titel-font); font-weight: 500; font-size: clamp(30px, 4vw, 48px); line-height: 1.05; letter-spacing: -.02em;
 }
 .iff-weg-text { color: var(--_gedaempft); }
 .iff-weg-aktion {
-  display: inline-flex; gap: 10px; margin-top: auto; padding-bottom: 3px;
+  display: inline-flex; gap: 10px; padding-bottom: 3px;
   font-weight: 500; border-bottom: 2px solid currentColor;
 }
 .iff-weg-aktion::after { content: "→"; transition: transform 240ms var(--_ease); }
@@ -163,6 +165,12 @@ const CSS = `
   overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
 }
 
+@media (max-width: 640px) {
+  .iff-weg { flex-direction: column; gap: 24px; aspect-ratio: 1 / 1; }
+  .iff-weg-kopf, .iff-weg-fuss { flex: none; }
+  .iff-weg-titel { font-size: 36px; }
+  .iff-weg-fuss { margin-top: auto; }
+}
 @media (max-width: 560px) {
   .iff { font-size: 16px; }
   .iff-optionen { grid-template-columns: 1fr; }
